@@ -7,6 +7,7 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.impl.DefaultCamelContext;
+import org.apache.camel.model.OnExceptionDefinition;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -104,6 +105,10 @@ class SingleRouteTest {
     private static class MyTestRoute extends RouteBuilder {
         @Override
         public void configure() {
+            onException(CustomException1.class);
+
+            onException(CustomException2.class);
+
             from("direct:start")
                     .log("Ricevuto messaggio: ${body}")
                     .choice()
@@ -129,6 +134,20 @@ class SingleRouteTest {
                     .log("Protocollo creato gestito correttamente")
                     .end();
         }
+
+        public OnExceptionDefinition onException(Class<? extends Throwable> exception) {
+            return new OnExceptionDefinition(exception)
+                    .maximumRedeliveries(5)
+                    .redeliveryDelay(2000)
+                    .onRedelivery(exchange -> {
+                        int attempt = exchange.getIn().getHeader(Exchange.REDELIVERY_COUNTER, Integer.class);
+                        log.warn("Tentativo {}/5 - Messaggio: {}", attempt, exchange.getIn().getBody(String.class));
+                    })
+                    .handled(true)
+                    .to("seda:gestioneErroreCustom");
+        }
+
+
 
         private static Predicate isADomandaPresentata() {
             return exchange -> {
@@ -171,5 +190,11 @@ class SingleRouteTest {
                 // chiamate ai servizi necessari o filtri
             }
         }
+    }
+
+    private static class CustomException1 extends Exception {
+    }
+
+    private static class CustomException2 extends Exception {
     }
 }
