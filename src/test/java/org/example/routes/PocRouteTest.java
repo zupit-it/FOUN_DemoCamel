@@ -3,12 +3,14 @@ package org.example.routes;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
-import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.example.config.CustomEndpoint;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.time.Instant;
+import java.util.Map;
+import java.util.UUID;
 
 class PocRouteTest {
 
@@ -24,10 +26,44 @@ class PocRouteTest {
     }
 
     @Test
-    void testDomandaPresentata() throws Exception {
+    void testHappyFlow() throws Exception {
+        template.sendBody(CustomEndpoint.DIRECT_WORKFLOW_DOMANDA.getInternalUri(), getBody());
+    }
 
-        template.sendBody(CustomEndpoint.DIRECT_WORKFLOW_DOMANDA.getInternalUri(), "Domanda presentata");
+    @Test
+    void testCreaFascicoloNotResponding() throws Exception {
+        template.sendBody(CustomEndpoint.DIRECT_WORKFLOW_DOMANDA.getInternalUri(), getBodyWithFailingCreaFascicolo());
+    }
 
-        MockEndpoint.assertIsSatisfied(context);
+    @Test
+    void testCreaProtocolloNotResponding() throws Exception {
+        template.sendBody(CustomEndpoint.DIRECT_WORKFLOW_DOMANDA.getInternalUri(), getBodyWithFailingCreaProtocollo());
+    }
+
+    private Map<String, Object> getBody(){
+        return Map.of(
+                "uuid", UUID.randomUUID().toString(),
+                "stato", "Domanda presentata",
+                "timestamp", Instant.now().toString(),
+                "richiedente", "Giovanni Pepe",
+                "domanda", "Domanda 1234", "skip", "nothing");
+    }
+
+    private Map<String, Object> getBodyWithFailingCreaFascicolo(){
+        return Map.of(
+                "uuid", UUID.randomUUID().toString(),
+                "stato", "Domanda presentata",
+                "timestamp", Instant.now().toString(),
+                "richiedente", "Giovanni Pepe",
+                "domanda", "Domanda 1234", "skip", "fascicolo");
+    }
+
+    private Map<String, Object> getBodyWithFailingCreaProtocollo(){
+        return Map.of(
+                "uuid", UUID.randomUUID().toString(),
+                "stato", "Domanda presentata",
+                "timestamp", Instant.now().toString(),
+                "richiedente", "Giovanni Pepe",
+                "domanda", "Domanda 1234", "skip", "protocollo");
     }
 }

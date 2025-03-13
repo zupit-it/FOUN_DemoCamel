@@ -3,6 +3,7 @@ package org.example.service;
 import org.apache.camel.ProducerTemplate;
 import org.example.config.CustomEndpoint;
 import org.example.service.request.DomandaRequest;
+import org.example.service.request.validator.DomandaRequestValidator;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -20,11 +21,11 @@ public class DomandaService {
     }
 
     public ResponseEntity<String> presentareDomanda(DomandaRequest domandaRequest) {
-        if (domandaRequest == null || domandaRequest.getRichiedente() == null || domandaRequest.getDomanda() == null) {
+        if (!DomandaRequestValidator.isValid(domandaRequest)) {
             return ResponseEntity.badRequest().body("Richiesta non valida: dati mancanti");
         }
 
-        String requestId = UUID.randomUUID().toString();
+        final String requestId = UUID.randomUUID().toString();
 
         Map<String, Object> eventoDomandaPresentata = Map.of(
                 "uuid", requestId,
