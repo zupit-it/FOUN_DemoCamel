@@ -3,11 +3,8 @@ package org.example.routes;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.JsonLibrary;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.example.config.CustomEndpoint;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
 
 
 import java.io.IOException;
@@ -36,7 +33,6 @@ public class WorkflowDomandaRoute extends RouteBuilder {
                 .end();
 
         from("direct:eventoDomandaPresentata")
-                .marshal().json(JsonLibrary.Jackson)
                 .log("Invio evento domanda presentata: ${body}")
                 .process(exchange -> sendMessageToQueue(CustomEndpoint.EVENTO_DOMANDA_PRESENTATA, exchange.getIn().getBody(Map.class)));
 
