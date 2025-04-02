@@ -3,21 +3,17 @@ package org.example.routes;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.builder.RouteBuilder;
 import org.example.config.CustomEndpoint;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.*;
 
-@Component
+// @Component
 public class WorkflowDomandaRoute extends RouteBuilder {
 
     private static final String SAP_EVENT_MESH_URL = "https://siag-d9aa9b13-42d2-4ef2-87cd-755d5bd74839.eu20.a.eventmesh.integration.cloud.sap:1443/messagingrest/v1/queues/";
@@ -26,20 +22,13 @@ public class WorkflowDomandaRoute extends RouteBuilder {
     private static final String RANDOM_CODICE_FASCICOLO = randomDigits(4);
     private static final String RANDOM_CODICE_PROTOCOLLO = randomDigits(4);
 
-    @Value("${azure.servicebus.connection-string}")
-    private String connectionString;
-
     @Override
     public void configure() {
         from(CustomEndpoint.DIRECT_WORKFLOW_DOMANDA.getInternalUri())
                 .log("Avvio workflow domanda")
-                .log("Connection string: " + connectionString)
-                // .multicast().parallelProcessing()
-                // .to("direct:eventoDomandaPresentata", "direct:creaFascicolo")
-                // .end();
-                .setBody(constant("Ciao, messaggio da Camel via Azure!"))
-                .process("azureServiceBusProcessor")
-                .log("Messaggio inviato a Service Bus");
+                .multicast().parallelProcessing()
+                .to("direct:eventoDomandaPresentata", "direct:creaFascicolo")
+                .end();
 
         from("direct:eventoDomandaPresentata")
                 .log("Invio evento domanda presentata: ${body}")

@@ -7,7 +7,8 @@ public enum CustomEndpoint {
     CREA_PROTOCOLLO("direct:creaProtocollo", "sa03_Procedimenti_CreaProtocollo_ToSiag"),
     DEPOSITA_DOCUMENTO("direct:depositaDocumento", "sa03_Procedimenti_DepositaDocumento_ToSiag"),
     DEPOSITA_ALLEGATO("direct:depositaAllegato", "sa03_Procedimenti_DepositaAllegato_ToSiag"),
-    EVENTO_DOMANDA_REGISTRATA("direct:eventoDomandaRegistrata", "sa03_Procedimenti_Eventi_ToSiag");
+    EVENTO_DOMANDA_REGISTRATA("direct:eventoDomandaRegistrata", "sa03_Procedimenti_Eventi_ToSiag"),
+    TEST("direct:test", "azureServiceBus:queue:test-zupit-michele-segata");
 
     private final String internalUri;
     private final String externalUri;
