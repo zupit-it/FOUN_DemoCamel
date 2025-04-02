@@ -1,0 +1,3 @@
+azure:
+  servicebus:
+    connection-string: 'INSERIRE_CONNECTION_STRING'
