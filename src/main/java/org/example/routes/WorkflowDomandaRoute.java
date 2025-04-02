@@ -2,18 +2,16 @@ package org.example.routes;
 
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.model.dataformat.JsonLibrary;
 import org.example.config.CustomEndpoint;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.*;
 
@@ -22,24 +20,17 @@ public class WorkflowDomandaRoute extends RouteBuilder {
 
     private static final String SAP_EVENT_MESH_URL = "https://siag-d9aa9b13-42d2-4ef2-87cd-755d5bd74839.eu20.a.eventmesh.integration.cloud.sap:1443/messagingrest/v1/queues/";
     private String skip = "";
-    private static final String token = "eyJhbGciOiJSUzI1NiIsImprdSI6Imh0dHBzOi8vc2lhZy5hdXRoZW50aWNhdGlvbi5ldTIwLmhhbmEub25kZW1hbmQuY29tL3Rva2VuX2tleXMiLCJraWQiOiJkZWZhdWx0LWp3dC1rZXktLTE0OTI0Nzc2MDYiLCJ0eXAiOiJKV1QiLCJqaWQiOiAidHdaak0vRjc1T2RsdXZWb05VNkZKM3pYZmVtRlZCVCtRNFhLeXFBWFlJWT0ifQ.eyJqdGkiOiJhZTRkNWNlMDg4ZGI0ZTQwOWQwM2QyM2JiZTFkYTVkOCIsImV4dF9hdHRyIjp7ImVuaGFuY2VyIjoiWFNVQUEiLCJzdWJhY2NvdW50aWQiOiJkOWFhOWIxMy00MmQyLTRlZjItODdjZC03NTVkNWJkNzQ4MzkiLCJ6ZG4iOiJzaWFnIiwic2VydmljZWluc3RhbmNlaWQiOiI0MTE3OGMwMi0yZGE3LTQ1OWUtYjk3ZS1hMjAzZWM5ZWJiMTAifSwic3ViIjoic2ItREIwMkMyQUItNTg0Ny00Q0IxLUJERUMtNzg5Qjc2RUNFMzI2LTQxMTc4YzAyLTJkYTctNDU5ZS1iOTdlLWEyMDNlYzllYmIxMCFiMTAxMjN8ZXZlbnRpbmcteHN1YWEtYnJva2VyIWI2Mjg3MiIsImF1dGhvcml0aWVzIjpbInVhYS5yZXNvdXJjZSJdLCJzY29wZSI6WyJ1YWEucmVzb3VyY2UiXSwiY2xpZW50X2lkIjoic2ItREIwMkMyQUItNTg0Ny00Q0IxLUJERUMtNzg5Qjc2RUNFMzI2LTQxMTc4YzAyLTJkYTctNDU5ZS1iOTdlLWEyMDNlYzllYmIxMCFiMTAxMjN8ZXZlbnRpbmcteHN1YWEtYnJva2VyIWI2Mjg3MiIsImNpZCI6InNiLURCMDJDMkFCLTU4NDctNENCMS1CREVDLTc4OUI3NkVDRTMyNi00MTE3OGMwMi0yZGE3LTQ1OWUtYjk3ZS1hMjAzZWM5ZWJiMTAhYjEwMTIzfGV2ZW50aW5nLXhzdWFhLWJyb2tlciFiNjI4NzIiLCJhenAiOiJzYi1EQjAyQzJBQi01ODQ3LTRDQjEtQkRFQy03ODlCNzZFQ0UzMjYtNDExNzhjMDItMmRhNy00NTllLWI5N2UtYTIwM2VjOWViYjEwIWIxMDEyM3xldmVudGluZy14c3VhYS1icm9rZXIhYjYyODcyIiwiZ3JhbnRfdHlwZSI6ImNsaWVudF9jcmVkZW50aWFscyIsInJldl9zaWciOiIyOTY3ZjFjNiIsImlhdCI6MTc0MjgwNjgxNiwiZXhwIjoxNzQyODUwMDE2LCJpc3MiOiJodHRwczovL3NpYWcuYXV0aGVudGljYXRpb24uZXUyMC5oYW5hLm9uZGVtYW5kLmNvbS9vYXV0aC90b2tlbiIsInppZCI6ImQ5YWE5YjEzLTQyZDItNGVmMi04N2NkLTc1NWQ1YmQ3NDgzOSIsImF1ZCI6WyJ1YWEiLCJzYi1EQjAyQzJBQi01ODQ3LTRDQjEtQkRFQy03ODlCNzZFQ0UzMjYtNDExNzhjMDItMmRhNy00NTllLWI5N2UtYTIwM2VjOWViYjEwIWIxMDEyM3xldmVudGluZy14c3VhYS1icm9rZXIhYjYyODcyIl19.Ak8Yk8Majotlr73zrl7hPG0I3Q9q9seGSFidkOUoHLPQy3ZvJnEKvXE188wjpYr4Bs2kue_p3hR9fPY29FflWEojdLeGj_R67sy2_oqGL93nSHaIXCRPA4dsvqgo4A2d_vowZ-EWD0yCS0MAAsvXV8FbBYkS4dq7Mfk2PuO5Aug1PDPALnhoVJ6JjnQiTo8zhestGKw8DvEMf6PjNrNroxL8apBttzHJAXRcM1-bZPylgCaIYHaVUPyXWS1-dBTc5NkIqEpNW-NLfjq_FrwoDjgryfYN44Jcaq0vlnaaJJPXPH3oF_I-8YIxd1ypmjrMlKYQL2k7vwUwYu7p8GEcXQ";
-    private static final String RANDOM_CODICE_FASCICOLO = randomDigits(4);
-    private static final String RANDOM_CODICE_PROTOCOLLO = randomDigits(4);
-
-    @Value("${azure.servicebus.connection-string}")
-    private String connectionString;
-
+    private static final String token = "eyJhbGciOiJSUzI1NiIsImprdSI6Imh0dHBzOi8vc2lhZy5hdXRoZW50aWNhdGlvbi5ldTIwLmhhbmEub25kZW1hbmQuY29tL3Rva2VuX2tleXMiLCJraWQiOiJkZWZhdWx0LWp3dC1rZXktLTE0OTI0Nzc2MDYiLCJ0eXAiOiJKV1QiLCJqaWQiOiAiK0FETFhIRHlCWEVsNUYzVk9XYlBPcE5KZG1ZeUx4aHY1RWVlWHpJQ2IyQT0ifQ.eyJqdGkiOiIyNjFmOWI4ODdmMjQ0NTUxYTQxOThhODNjY2I2YmYxOCIsImV4dF9hdHRyIjp7ImVuaGFuY2VyIjoiWFNVQUEiLCJzdWJhY2NvdW50aWQiOiJkOWFhOWIxMy00MmQyLTRlZjItODdjZC03NTVkNWJkNzQ4MzkiLCJ6ZG4iOiJzaWFnIiwic2VydmljZWluc3RhbmNlaWQiOiI0MTE3OGMwMi0yZGE3LTQ1OWUtYjk3ZS1hMjAzZWM5ZWJiMTAifSwic3ViIjoic2ItREIwMkMyQUItNTg0Ny00Q0IxLUJERUMtNzg5Qjc2RUNFMzI2LTQxMTc4YzAyLTJkYTctNDU5ZS1iOTdlLWEyMDNlYzllYmIxMCFiMTAxMjN8ZXZlbnRpbmcteHN1YWEtYnJva2VyIWI2Mjg3MiIsImF1dGhvcml0aWVzIjpbInVhYS5yZXNvdXJjZSJdLCJzY29wZSI6WyJ1YWEucmVzb3VyY2UiXSwiY2xpZW50X2lkIjoic2ItREIwMkMyQUItNTg0Ny00Q0IxLUJERUMtNzg5Qjc2RUNFMzI2LTQxMTc4YzAyLTJkYTctNDU5ZS1iOTdlLWEyMDNlYzllYmIxMCFiMTAxMjN8ZXZlbnRpbmcteHN1YWEtYnJva2VyIWI2Mjg3MiIsImNpZCI6InNiLURCMDJDMkFCLTU4NDctNENCMS1CREVDLTc4OUI3NkVDRTMyNi00MTE3OGMwMi0yZGE3LTQ1OWUtYjk3ZS1hMjAzZWM5ZWJiMTAhYjEwMTIzfGV2ZW50aW5nLXhzdWFhLWJyb2tlciFiNjI4NzIiLCJhenAiOiJzYi1EQjAyQzJBQi01ODQ3LTRDQjEtQkRFQy03ODlCNzZFQ0UzMjYtNDExNzhjMDItMmRhNy00NTllLWI5N2UtYTIwM2VjOWViYjEwIWIxMDEyM3xldmVudGluZy14c3VhYS1icm9rZXIhYjYyODcyIiwiZ3JhbnRfdHlwZSI6ImNsaWVudF9jcmVkZW50aWFscyIsInJldl9zaWciOiIyOTY3ZjFjNiIsImlhdCI6MTc0MjIwNjM4NSwiZXhwIjoxNzQyMjQ5NTg1LCJpc3MiOiJodHRwczovL3NpYWcuYXV0aGVudGljYXRpb24uZXUyMC5oYW5hLm9uZGVtYW5kLmNvbS9vYXV0aC90b2tlbiIsInppZCI6ImQ5YWE5YjEzLTQyZDItNGVmMi04N2NkLTc1NWQ1YmQ3NDgzOSIsImF1ZCI6WyJ1YWEiLCJzYi1EQjAyQzJBQi01ODQ3LTRDQjEtQkRFQy03ODlCNzZFQ0UzMjYtNDExNzhjMDItMmRhNy00NTllLWI5N2UtYTIwM2VjOWViYjEwIWIxMDEyM3xldmVudGluZy14c3VhYS1icm9rZXIhYjYyODcyIl19.qBHTLjZMOi2I1aje9O9fWgJheCbDIjoUm4lz_KbrmuqZ5fzOeYYiBcUhGM8WWZFNM3Ntwl2cweE0TB3W-L7gxbAHP4vQunMD1pk9Ryvdx1r7-dGTU8wuQH-pVrEg6jeVDVj-FjYpZktXCFEKyBJIyTGOjdqPHnxaBM_5PEZS2qeuZ9RJz3wvsmUd0C-KDNRvvBhg1WU9CWeuB1e2KmEBVZk--wEoWYMljMH16Cg37LPN35qafu078WIfIaHoy5ADnfLPp1oZSyUQqC_ZOFmbeoP6kjmpE7xPbk9-qZKXdgeC9dd5jWtZj3-IB_UMU4KVRC_6hI584-fLZ-BQEGAfmg";
+    private static final String randomCodiceFascicolo = randomDigits(4);
+    private static final String randomCodiceProtocollo = randomDigits(4);
+    private static String uuid = "";
     @Override
     public void configure() {
         from(CustomEndpoint.DIRECT_WORKFLOW_DOMANDA.getInternalUri())
                 .log("Avvio workflow domanda")
-                .log("Connection string: " + connectionString)
-                // .multicast().parallelProcessing()
-                // .to("direct:eventoDomandaPresentata", "direct:creaFascicolo")
-                // .end();
-                .setBody(constant("Ciao, messaggio da Camel via Azure!"))
-                .process("azureServiceBusProcessor")
-                .log("Messaggio inviato a Service Bus");
+                .multicast().parallelProcessing()
+                .to("direct:eventoDomandaPresentata", "direct:creaFascicolo")
+                .end();
 
         from("direct:eventoDomandaPresentata")
                 .log("Invio evento domanda presentata: ${body}")
@@ -138,9 +129,9 @@ public class WorkflowDomandaRoute extends RouteBuilder {
         String body = "{}";
 
         if (mode == "1"){
-            body = String.format("{\"codice-fascicolo\": \"%s\"}", RANDOM_CODICE_FASCICOLO);
+            body = String.format("{\"codice-fascicolo\": \"%s\"}", randomCodiceFascicolo);
         } else if (mode == "2"){
-            body = String.format("{\"codice-fascicolo\": \"%s\", \"numero-protocollo\": \"%s\" }", RANDOM_CODICE_FASCICOLO, RANDOM_CODICE_PROTOCOLLO);
+            body = String.format("{\"codice-fascicolo\": \"%s\", \"numero-protocollo\": \"%s\" }", randomCodiceFascicolo, randomCodiceProtocollo);
         }
 
         System.out.println("Sending message to endpoint: " +  uri);
