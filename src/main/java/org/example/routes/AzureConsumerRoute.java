@@ -9,7 +9,7 @@ public class AzureConsumerRoute extends RouteBuilder {
 
     @Override
     public void configure() {
-        from(CustomEndpoint.TEST.getExternalUri())
+        from(CustomEndpoint.TEST_CONSUMPTION.getExternalUri())
                 .routeId("azureConsumerRoute")
                 .log("Ricevuto da Azure SB: ${body}");
     }
