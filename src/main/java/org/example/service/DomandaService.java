@@ -25,7 +25,7 @@ public class DomandaService {
             return ResponseEntity.badRequest().body("Richiesta non valida: dati mancanti");
         }
 
-        final String requestId = UUID.randomUUID().toString();
+        final String requestId = getUuid();
 
         Map<String, Object> eventoDomandaPresentata = Map.of(
                 "uuid", requestId,
@@ -38,5 +38,10 @@ public class DomandaService {
         producerTemplate.asyncSendBody(CamelEndpoint.DIRECT_WORKFLOW_DOMANDA.getUri(), eventoDomandaPresentata);
 
         return ResponseEntity.ok("Domanda ricevuta con ID: " + requestId);
+    }
+
+    // Andrà su DB nel caso reale
+    private static String getUuid() {
+        return "123e4567-e89b-12d3-a456-426614174000";
     }
 }
