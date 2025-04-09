@@ -1,7 +1,7 @@
 package org.example.service;
 
 import org.apache.camel.ProducerTemplate;
-import org.example.config.CustomEndpoint;
+import org.example.config.CamelEndpoint;
 import org.example.service.request.DomandaRequest;
 import org.example.service.request.validator.DomandaRequestValidator;
 import org.springframework.http.ResponseEntity;
@@ -35,7 +35,7 @@ public class DomandaService {
                 "domanda", domandaRequest.getDomanda()
         );
 
-        producerTemplate.asyncSendBody(CustomEndpoint.DIRECT_WORKFLOW_DOMANDA.getInternalUri(), eventoDomandaPresentata);
+        producerTemplate.asyncSendBody(CamelEndpoint.DIRECT_WORKFLOW_DOMANDA.getUri(), eventoDomandaPresentata);
 
         return ResponseEntity.ok("Domanda ricevuta con ID: " + requestId);
     }
