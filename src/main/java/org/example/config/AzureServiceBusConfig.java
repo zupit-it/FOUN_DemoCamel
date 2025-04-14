@@ -15,7 +15,7 @@ public class AzureServiceBusConfig {
 
         JmsConnectionFactory factory = new JmsConnectionFactory(connectionURI);
         factory.setUsername("RootManageSharedAccessKey");
-        factory.setPassword("");
+        factory.setPassword("YOUR_PASSWORD");
 
         return factory;
     }
