@@ -1,8 +1,8 @@
-# POC_Demo_Camel_Azure
+# POC Demo Camel Azure
 
 > Progetto dimostrativo basato su Apache Camel per l'integrazione con Azure Service Bus, progettato per orchestrare il flusso di gestione della protocollazione attraverso rotte Camel.
 
-## 🚀 Tecnologie utilizzate
+## Tecnologie utilizzate
 
 - Java 17
 - Spring Boot
@@ -10,7 +10,7 @@
 - Azure Service Bus SDK
 - Maven
 
-## 🔧 Setup del progetto
+## Setup del progetto
 
 ### Prerequisiti
 
