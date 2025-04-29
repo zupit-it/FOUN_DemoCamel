@@ -4,7 +4,6 @@ public class DomandaRequest {
     private Richiedente richiedente;
     private Domanda domanda;
 
-    // Getters e Setters
     public Richiedente getRichiedente() {
         return richiedente;
     }
@@ -25,7 +24,6 @@ public class DomandaRequest {
         private String nome;
         private String cognome;
 
-        // Getters e Setters
         public String getNome() {
             return nome;
         }
@@ -46,7 +44,6 @@ public class DomandaRequest {
     public class Domanda {
         private String descrizione;
 
-        // Getters e Setters
         public String getDescrizione() {
             return descrizione;
         }

@@ -1,6 +1,7 @@
 package org.example.routes.request;
 
 import org.apache.camel.builder.RouteBuilder;
+import org.example.config.AzureQueue;
 import org.example.config.CamelEndpoint;
 import org.springframework.stereotype.Component;
 
@@ -11,20 +12,26 @@ import java.util.Map;
 @Component
 public class EndWorkflowRoute extends RouteBuilder {
 
+    private final AzureServiceBusDynamicProcessor azureServiceBusDynamicProcessor;
+
+    public EndWorkflowRoute(AzureServiceBusDynamicProcessor azureServiceBusDynamicProcessor) {
+        this.azureServiceBusDynamicProcessor = azureServiceBusDynamicProcessor;
+    }
+
     @Override
     public void configure() {
-        from(CamelEndpoint.CREA_PROTOCOLLO_REPLY.getUri())
+        from(CamelEndpoint.DIRECT_END_WORKFLOW.getUri())
                 .log("Completamento workflow domanda")
-                .multicast().parallelProcessing()
+                .multicast().parallelProcessing().synchronous()
                 .to("direct:depositaDocumento", "direct:depositaAllegato", "direct:eventoDomandaRegistrata");
 
         from("direct:depositaDocumento")
                 .log("Invio comando di deposito documento")
-                .to(CamelEndpoint.DEPOSITA_DOCUMENTO.getUri());
+                .setHeader("QUEUE_NAME", constant(AzureQueue.DEPOSITA_DOCUMENTO.toString())).process(azureServiceBusDynamicProcessor);
 
         from("direct:depositaAllegato")
                 .log("Invio comando di deposito allegato")
-                .to(CamelEndpoint.DEPOSITA_ALLEGATO.getUri());
+                .setHeader("QUEUE_NAME", constant(AzureQueue.DEPOSITA_ALLEGATO.toString())).process(azureServiceBusDynamicProcessor);
 
         from("direct:eventoDomandaRegistrata")
                 .log("Invio comando di domanda registrata")
@@ -42,6 +49,6 @@ public class EndWorkflowRoute extends RouteBuilder {
                     return body;
                 })
                 .marshal().json()
-                .to(CamelEndpoint.EVENTO_DOMANDA_REGISTRATA.getUri());
+                .setHeader("QUEUE_NAME", constant(AzureQueue.EVENTO_DOMANDA_REGISTRATA.toString())).process(azureServiceBusDynamicProcessor);
     }
 }
